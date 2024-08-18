@@ -3,7 +3,7 @@ import React from "react";
 
 function Header() {
     return (
-        <div className="flex items-center justify-between px-10 py-5">
+        <div className="flex items-center justify-between px-10 py-5 w-100">
             {/* Render different components based on sign-in status */}
             <SignedIn>
                 {/* Display the user's profile or menu through UserButton */}
