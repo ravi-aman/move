@@ -9,7 +9,7 @@ import {
   UserButton
 } from '@clerk/nextjs'
 import Header from "@/components/Header";
-import { Sidebar } from "@/components/Sidebar";
+import Sidebar from "@/components/Sidebar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default function RootLayout({
           <div className="flex min-h-screen">
             <Sidebar />
 
-            <div className="flex-1 p-4 bg-gray-100 overflow-auto scrollbar-hide">{children}</div>
+            <div className="flex-1 p-4 bg-gray-100 overflow-auto bg-blue scrollbar-hide">{children}</div>
 
           </div>
         </body>
