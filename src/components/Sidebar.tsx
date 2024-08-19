@@ -20,7 +20,7 @@ import { MenuIcon } from 'lucide-react'
 
 
 function Sidebar() {
-
+    const [data,loading,error]=useCollection;
     const menuOption = (
         <>
             <NewDocumentButton />
