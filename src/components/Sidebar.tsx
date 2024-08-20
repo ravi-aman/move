@@ -1,9 +1,13 @@
+"use client";
+
 import React, { useEffect, useState } from 'react';
 import NewDocumentButton from './subComponents/NewDocumentButton';
-
 import {
     Sheet,
+    SheetClose,
     SheetContent,
+    SheetDescription,
+    SheetFooter,
     SheetHeader,
     SheetTitle,
     SheetTrigger,
@@ -12,9 +16,10 @@ import { MenuIcon } from 'lucide-react';
 import { useCollection } from 'react-firebase-hooks/firestore';
 
 import { useUser } from '@clerk/nextjs';
-import { collectionGroup, query, where, DocumentData } from 'firebase/firestore';
+import { collectionGroup, query, where } from 'firebase/firestore'; // Import the necessary Firestore functions
+import type { DocumentData, Query } from 'firebase/firestore'; // Import types only
 import { db } from '../../firebase';
-
+import SidebarOption from '@/components/SidebarOption';
 interface RoomDocument extends DocumentData {
     createAt: string;
     role: "Owner" | "editor";
@@ -25,7 +30,6 @@ interface RoomDocument extends DocumentData {
 function Sidebar() {
     const { isSignedIn, user } = useUser();
 
-    // State to hold grouped data for documents where the user is an owner or editor
     const [groupedData, setGroupData] = useState<{
         owner: RoomDocument[];
         editor: RoomDocument[];
@@ -36,36 +40,30 @@ function Sidebar() {
 
     const userEmail = user?.emailAddresses[0]?.emailAddress;
 
-    // Query Firestore to get documents where the current user is an owner or editor
     const [data, loading, error] = useCollection(
         isSignedIn && user ? (
             query(
-                collectionGroup(db, 'rooms'),
+                collectionGroup(db, 'rooms') as Query<DocumentData, DocumentData>, // Cast to the imported Query type
                 where('userId', '==', userEmail)
             )
         ) : null
     );
 
-    // Use effect to process the Firestore data once it's retrieved
     useEffect(() => {
         if (!data) return;
 
-        // Group documents by role (Owner or Editor)
         const grouped = data.docs.reduce<{
             owner: RoomDocument[];
             editor: RoomDocument[];
         }>(
             (acc, curr) => {
                 const roomData = curr.data() as RoomDocument;
-
-                // Check if the user is the owner of the document
                 if (roomData.role === "Owner") {
                     acc.owner.push({
                         id: curr.id,
                         ...roomData,
                     });
                 } else {
-                    // Otherwise, the user is an editor
                     acc.editor.push({
                         id: curr.id,
                         ...roomData,
@@ -78,39 +76,37 @@ function Sidebar() {
                 editor: [],
             }
         );
-
-        // Update the state with the grouped data
         setGroupData(grouped);
     }, [data]);
 
-    // Render menu options with the list of documents
     const menuOption = (
         <>
             <NewDocumentButton />
             <div>
-                {/* My Documents section */}
                 {groupedData.owner.length === 0 ? (
                     <h2 className='text-gray-500 font-semibold text-sm'>
-                        No Documents Found
+                        No Document Found
                     </h2>
                 ) : (
                     <>
                         <h2 className='text-gray-500 font-semibold text-sm'>
-                            My Documents
+                            My Document
                         </h2>
                         {groupedData.owner.map((doc) => (
-                            <p key={doc.roomId}>{doc.roomId}</p>
+                            <SidebarOption
+                                key={doc.id}
+                                id={doc.id}
+                                href={`/doc/${doc.id}`}
+                            />
                         ))}
                     </>
                 )}
             </div>
-            {/* Additional sections for shared and recently accessed documents can be added here */}
         </>
     );
 
     return (
         <div className='p-2 md:p-5 bg-gray-200 relative'>
-            {/* Mobile view sidebar menu */}
             <div className='md:hidden'>
                 <Sheet>
                     <SheetTrigger>
@@ -124,8 +120,6 @@ function Sidebar() {
                     </SheetContent>
                 </Sheet>
             </div>
-
-            {/* Desktop view sidebar menu */}
             <div className='hidden md:inline'>{menuOption}</div>
         </div>
     );
