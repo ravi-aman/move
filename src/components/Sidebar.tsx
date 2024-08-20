@@ -1,3 +1,4 @@
+// sidebar.tsx
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -20,6 +21,8 @@ import { collectionGroup, query, where } from 'firebase/firestore'; // Import th
 import type { DocumentData, Query } from 'firebase/firestore'; // Import types only
 import { db } from '../../firebase';
 import SidebarOption from '@/components/SidebarOption';
+import { handleFirestoreError } from '@/utils/errorHandler'; // Import the error handler
+
 interface RoomDocument extends DocumentData {
     createAt: string;
     role: "Owner" | "editor";
@@ -50,6 +53,11 @@ function Sidebar() {
     );
 
     useEffect(() => {
+        if (error) {
+            handleFirestoreError(error); // Use the error handler
+            return;
+        }
+
         if (!data) return;
 
         const grouped = data.docs.reduce<{
@@ -77,7 +85,7 @@ function Sidebar() {
             }
         );
         setGroupData(grouped);
-    }, [data]);
+    }, [data, error]);
 
     const menuOption = (
         <>
