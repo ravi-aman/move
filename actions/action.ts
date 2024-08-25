@@ -4,7 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 import { adminDb } from "../firebase-admin";
 
 export async function createNewDocument() {
-    const { sessionClaims } = await auth().protect();
+    auth().protect()
+    const { sessionClaims } = await auth();
 
     const docCollectionRef = adminDb.collection("documents");
     const docRef = await docCollectionRef.add({
@@ -21,7 +22,6 @@ export async function createNewDocument() {
 
     return {
         docId: docRef.id,
-        
         roomId: docRef.id
     }
 }

@@ -14,7 +14,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase only if there are no initialized apps
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const app = getApps().length===0 ? initializeApp(firebaseConfig) : getApp();
 
 // Get a Firestore instance
 const db = getFirestore(app);

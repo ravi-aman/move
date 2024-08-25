@@ -1,14 +1,10 @@
-// sidebar.tsx
 "use client";
 
 import React, { useEffect, useState } from 'react';
 import NewDocumentButton from './subComponents/NewDocumentButton';
 import {
     Sheet,
-    SheetClose,
     SheetContent,
-    SheetDescription,
-    SheetFooter,
     SheetHeader,
     SheetTitle,
     SheetTrigger,
@@ -17,22 +13,22 @@ import { MenuIcon } from 'lucide-react';
 import { useCollection } from 'react-firebase-hooks/firestore';
 
 import { useUser } from '@clerk/nextjs';
-import { collectionGroup, query, where } from 'firebase/firestore'; // Import the necessary Firestore functions
-import type { DocumentData, Query } from 'firebase/firestore'; // Import types only
+import { collectionGroup, collection, query, where } from 'firebase/firestore';
+import type { DocumentData, Query } from 'firebase/firestore';
 import { db } from '../../firebase';
 import SidebarOption from '@/components/SidebarOption';
-import { handleFirestoreError } from '@/utils/errorHandler'; // Import the error handler
+import { handleFirestoreError } from '@/utils/errorHandler';
+// import { CollectionGroup } from 'firebase-admin/firestore';
 
 interface RoomDocument extends DocumentData {
     createAt: string;
-    role: "Owner" | "editor";
+    role: "owner" | "editor";
     roomId: string;
     userId: string;
 }
 
 function Sidebar() {
     const { isSignedIn, user } = useUser();
-
     const [groupedData, setGroupData] = useState<{
         owner: RoomDocument[];
         editor: RoomDocument[];
@@ -40,25 +36,28 @@ function Sidebar() {
         owner: [],
         editor: []
     });
-
-    const userEmail = user?.emailAddresses[0]?.emailAddress;
-
+    // console.log(user)
+    const primaryEmail = user?.primaryEmailAddress?.emailAddress; // Get the primary email address
+    // console.log(primaryEmail)
     const [data, loading, error] = useCollection(
-        isSignedIn && user ? (
+        user && (
             query(
-                collectionGroup(db, 'rooms') as Query<DocumentData, DocumentData>, // Cast to the imported Query type
-                where('userId', '==', userEmail)
+                collection(db, `/users/${primaryEmail}/room/`) as Query<RoomDocument>,
+                where('userId', '==', primaryEmail) // Use the primary email address
             )
-        ) : null
+        )
     );
-
+    // console.log("data here ", data);
+    // console.log("data docs ", data?.docs)
     useEffect(() => {
         if (error) {
-            handleFirestoreError(error); // Use the error handler
+            handleFirestoreError(error);
             return;
         }
-
-        if (!data) return;
+        if (!data) {
+            console.log("No data returned");
+            return;
+        }
 
         const grouped = data.docs.reduce<{
             owner: RoomDocument[];
@@ -66,7 +65,7 @@ function Sidebar() {
         }>(
             (acc, curr) => {
                 const roomData = curr.data() as RoomDocument;
-                if (roomData.role === "Owner") {
+                if (roomData.role === "owner") {
                     acc.owner.push({
                         id: curr.id,
                         ...roomData,
@@ -84,9 +83,17 @@ function Sidebar() {
                 editor: [],
             }
         );
-        setGroupData(grouped);
-    }, [data, error]);
 
+        // console.log("group  ", grouped)
+
+        setGroupData(grouped);
+    }, [data, error, primaryEmail]); // Corrected the dependency array
+
+    // groupedData.owner.map((doc) => (
+    //     console.log(doc.roomId)
+    // ))
+    // console.log(groupedData)
+    // console.log(groupedData.owner.length)
     const menuOption = (
         <>
             <NewDocumentButton />
@@ -102,15 +109,29 @@ function Sidebar() {
                         </h2>
                         {groupedData.owner.map((doc) => (
                             <SidebarOption
-                                key={doc.id}
-                                id={doc.id}
-                                href={`/doc/${doc.id}`}
+                                key={doc.roomId}
+                                id={doc.roomId}
+                                href={`/doc/${doc.roomId}`}
                             />
                         ))}
                     </>
                 )}
             </div>
+            {groupedData.editor.length > 0 && (
+                <>
+                    <h2 className='text-gray-500 font-semibold text-sm'>
+                        My Document
+                    </h2>
+                    {groupedData.owner.map((doc) => (
+                        <SidebarOption
+                            key={doc.roomId}
+                            id={doc.roomId}
+                            href={`/doc/${doc.roomId}`}
+                        />
+                    ))}                </>
+            )}
         </>
+
     );
 
     return (
@@ -134,3 +155,5 @@ function Sidebar() {
 }
 
 export default Sidebar;
+
+
