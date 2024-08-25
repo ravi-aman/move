@@ -1,5 +1,6 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import React from "react";
+import Breadcrams from "./Breadcrams";
 
 function Header() {
     return (
@@ -8,6 +9,7 @@ function Header() {
             <SignedIn>
                 {/* Display the user's profile or menu through UserButton */}
                 <h1>Welcome to Your Space</h1>
+                <Breadcrams/>
                 <UserButton />
             </SignedIn>
 
