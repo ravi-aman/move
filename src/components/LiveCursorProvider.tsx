@@ -1,17 +1,18 @@
-import { useMyPresence, useOther, useOthers, useUpdateMyPresence } from '@liveblocks/react/suspense';
-import { PointerEvent } from 'react'
+import { useMyPresence, useOthers } from '@liveblocks/react/suspense';
+import FollowPointer from './FollowPointer';
+import { PointerEvent } from 'react';
 
-function LiveCursorProvider({ children }: {
-    children: React.ReactNode;
-}) {
+function LiveCursorProvider({ children }: { children: React.ReactNode }) {
     const [myPresence, updateMyPresence] = useMyPresence();
     const others = useOthers();
+
     function handlePointerMove(e: PointerEvent<HTMLDivElement>) {
         const cursor = { x: Math.floor(e.pageX), y: Math.floor(e.pageY) };
         updateMyPresence({ cursor });
     }
+
     function handlePointerLeave() {
-        updateMyPresence({ cursor: null })
+        updateMyPresence({ cursor: null });
     }
 
     return (
@@ -21,7 +22,7 @@ function LiveCursorProvider({ children }: {
         >
             {others
                 .filter((other) => other.presence.cursor !== null)
-                .map((connectionId, presence, info) => (
+                .map(({ connectionId, presence, info }) => (
                     <FollowPointer
                         key={connectionId}
                         info={info}
@@ -30,9 +31,9 @@ function LiveCursorProvider({ children }: {
                     />
                 ))}
 
-            {/* render cursor */}
+            {children}
         </div>
-    )
+    );
 }
 
-export default LiveCursorProvider
+export default LiveCursorProvider;

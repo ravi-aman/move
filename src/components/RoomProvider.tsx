@@ -8,6 +8,7 @@ import {
     from "@liveblocks/react/suspense"
 
 import LoadingSpinner from "@/components/LoadingSpinner"
+import LiveCursorProvider from "./LiveCursorProvider"
 
 
 function RoomProvider({ roomId, children }: {
@@ -25,9 +26,8 @@ function RoomProvider({ roomId, children }: {
         // }}
         >
             <ClientSideSuspense fallback={<LoadingSpinner />}>
-                {children}
                 <LiveCursorProvider>
-                    
+                    {children}
                 </LiveCursorProvider>
             </ClientSideSuspense>
         </RoomProviderWrapper>
