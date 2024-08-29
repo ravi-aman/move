@@ -6,6 +6,7 @@ import React, { FormEvent, useEffect, useState, useTransition } from 'react';
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useDocumentData } from "react-firebase-hooks/firestore";
+import Editor from "./Editor";
 
 export default function Document({ id }: { id: string }) {
     const [data, loading, error] = useDocumentData(doc(db, "documents", id))
@@ -31,7 +32,7 @@ export default function Document({ id }: { id: string }) {
     return (
         <div>
             <div className="flex max-w-6xl mx-auto justify-between pb-5 ">
-                <form className="flex  flex-1 justify-between px-5 space-x-2"  onSubmit={updateTitle}>
+                <form className="flex  flex-1 justify-between px-5 space-x-2" onSubmit={updateTitle}>
                     <Input value={input} onChange={(e) => setInput(e.target.value)} />
                     <Button type="submit" disabled={isUpdating}>
                         {isUpdating ? "Updating.." : "Update"}
@@ -41,6 +42,12 @@ export default function Document({ id }: { id: string }) {
             <div>
                 {/* {avatar} */}
             </div>
+
+            <hr className="pb-10" />
+
+            {/* Collaborative Editor */}
+
+            <Editor />
         </div>
     );
 }

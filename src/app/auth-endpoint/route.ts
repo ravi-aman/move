@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
             avatar: sessionClaims?.image,
         },
     });
+    
 
     const usersInRoomSnapshot = await adminDb
         .collection(`/users/${sessionClaims?.email}/room`)
